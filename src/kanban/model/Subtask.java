@@ -7,7 +7,6 @@ public class Subtask extends Task{
     // идентификатор эпика
     private long epicId;
 
-    // constructors
 
     public Subtask() {
     }

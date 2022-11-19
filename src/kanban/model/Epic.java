@@ -10,6 +10,7 @@ public class Epic extends Task {
     // список идентификаторов подзадачь
     private ArrayList<Long> subtaskIds;
 
+
     public Epic() {
     }
 
@@ -20,7 +21,9 @@ public class Epic extends Task {
     // get / set
 
     public ArrayList<Long> getSubtaskIds() {
-        if(subtaskIds ==null) subtaskIds = new ArrayList<>();
+        if(subtaskIds ==null){
+            subtaskIds = new ArrayList<>();
+        }
         return subtaskIds;
     }
 
