@@ -15,10 +15,10 @@ public class InMemoryHistoryManager implements HistoryManager {
     @Override
     // добавить задачу в историю
     public void add(Task task) {
-        if(task==null){
+        if (task == null) {
             return;
         }
-        if(history.size()>=LIMIT) {
+        if (history.size() >= LIMIT) {
             history.removeFirst();
         }
         history.add(task);

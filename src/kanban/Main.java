@@ -52,17 +52,17 @@ public class Main {
         // Проверьте, что статус задачи и подзадачи сохранился,
         // а статус эпика рассчитался по статусам подзадач.
 
-        for(Task task: manager.getAllTasks()){
+        for (Task task: manager.getAllTasks()) {
             task.setState(TaskState.DONE);
             manager.updateTask(task);
         }
 
-        for(Subtask subtask: manager.getAllSubtasks()){
+        for (Subtask subtask: manager.getAllSubtasks()) {
             subtask.setState(TaskState.IN_PROGRESS);
             manager.updateSubtask(subtask);
         }
 
-        for(Epic epic: manager.getAllEpics()){
+        for (Epic epic: manager.getAllEpics()) {
             epic.setState(TaskState.DONE);
             manager.updateEpic(epic);
         }
@@ -160,9 +160,9 @@ public class Main {
     }
 
     // выводим список задач с указанием типа
-    private static void printoutList(List<Task> list){
+    private static void printoutList(List<Task> list) {
         System.out.printf("%7s %4s %9s %15s %s\n","type", "id","state","name","description");
-        for(Task task: list){
+        for (Task task: list) {
             System.out.printf("%7s %4d %9s %15s %s\n",
                     task.getClass().getSimpleName(),
                     task.getId(),task.getState(),task.getName(),task.getDescription());
@@ -175,7 +175,7 @@ public class Main {
     private static void printout(TaskManager manager) {
         System.out.println("--- Tasks ---");
         System.out.printf("%12s %9s %15s %s\n","id","state","name","description");
-        for(Task task: manager.getAllTasks()){
+        for (Task task: manager.getAllTasks()) {
             System.out.printf("%12d %9s %15s %s\n",
                     task.getId(),task.getState(),task.getName(),task.getDescription());
         }
@@ -184,10 +184,10 @@ public class Main {
 
         System.out.println("--- Epics ---");
         System.out.printf("%12s %9s %15s %s\n","id","state","name","description");
-        for(Epic epic: manager.getAllEpics()){
+        for (Epic epic: manager.getAllEpics()) {
             System.out.printf("epic %7d %9s %15s %s\n",
                     epic.getId(),epic.getState(),epic.getName(),epic.getDescription());
-            for(long id: epic.getSubtaskIds()){
+            for (long id: epic.getSubtaskIds()) {
                 Subtask subtask = manager.getSubtask(id);
                 System.out.printf("%12d %9s %15s %s\n",
                         subtask.getId(),subtask.getState(),subtask.getName(),subtask.getDescription());
@@ -195,6 +195,5 @@ public class Main {
         }
         System.out.println();
     }
-
 
 }

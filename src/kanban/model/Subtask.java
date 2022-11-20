@@ -3,7 +3,7 @@ package kanban.model;
 
 import java.util.Objects;
 
-public class Subtask extends Task{
+public class Subtask extends Task {
     // идентификатор эпика
     private long epicId;
 
@@ -43,9 +43,15 @@ public class Subtask extends Task{
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Subtask)) return false;
-        if (!super.equals(o)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Subtask)) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
         Subtask subtask = (Subtask) o;
         return epicId == subtask.epicId;
     }
