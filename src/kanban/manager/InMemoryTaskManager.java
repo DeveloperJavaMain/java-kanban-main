@@ -14,6 +14,10 @@ import static kanban.model.TaskState.*;
 // Менеджер задачь, хранит данные в памяти
 
 public class InMemoryTaskManager implements TaskManager {
+
+    // менеджер истории просмотров
+    private final HistoryManager historyManager = Manager.getDefaultHistory();
+
     // счетчик для получения уникального идентификатора
     private static long counter = 0;
 
@@ -21,28 +25,28 @@ public class InMemoryTaskManager implements TaskManager {
     private HashMap<Long, Epic> hmEpics = new HashMap<>();      // список kanban.model.Epic
     private HashMap<Long, Subtask> hmSubtasks = new HashMap<>();// список kanban.model.Subtask
 
-    // менеджер истории просмотров
-    private HistoryManager historyManager = Manager.getDefaultHistory();
-
     // methods
 
     // методы kanban.model.Task
 
     // список всех задачь
     @Override
-    public List<Task> getAllTasks(){
+    public List<Task> getAllTasks() {
         return new ArrayList<>( hmTasks.values() );
     }
 
     // удалить все задачи
     @Override
-    public void removeAllTasks(){
+    public void removeAllTasks() {
+        for(Long id: hmTasks.keySet()){
+            historyManager.remove(id);
+        }
         hmTasks.clear();
     }
 
     // получить задачу по идентификатору
     @Override
-    public Task getTask(long id){
+    public Task getTask(long id) {
         Task task = hmTasks.get(id);
         historyManager.add(task);
         return task;
@@ -50,8 +54,8 @@ public class InMemoryTaskManager implements TaskManager {
 
     // добавить новую задачу
     @Override
-    public long createTask(Task newTask){
-        if(newTask==null){
+    public long createTask(Task newTask) {
+        if (newTask == null) {
             return -1;
         }
         long id = getNextId();
@@ -63,7 +67,7 @@ public class InMemoryTaskManager implements TaskManager {
     // обновить задачу
     @Override
     public long updateTask(Task task){
-        if(task==null){
+        if (task == null) {
             return -1;
         }
         hmTasks.put(task.getId(),task);
@@ -72,22 +76,29 @@ public class InMemoryTaskManager implements TaskManager {
 
     // удалить задачу
     @Override
-    public boolean removeTask(long id){
+    public boolean removeTask(long id) {
         Task task = hmTasks.remove(id);
-        return (task!=null);
+        historyManager.remove(id);
+        return (task != null);
     }
 
     // методы kanban.model.Epic
 
     // список всех эпиков
     @Override
-    public List<Epic> getAllEpics(){
+    public List<Epic> getAllEpics() {
         return new ArrayList<>( hmEpics.values() );
     }
 
     // удалить все эпики
     @Override
-    public void removeAllEpics(){
+    public void removeAllEpics() {
+        for(Long id: hmEpics.keySet()){
+            historyManager.remove(id);
+        }
+        for(Long id: hmSubtasks.keySet()){
+            historyManager.remove(id);
+        }
         hmEpics.clear();
         hmSubtasks.clear();
     }
@@ -102,8 +113,8 @@ public class InMemoryTaskManager implements TaskManager {
 
     // добавить новый эпик
     @Override
-    public long createEpic(Epic newEpic){
-        if(newEpic==null){
+    public long createEpic(Epic newEpic) {
+        if (newEpic == null) {
             return -1;
         }
         long id = getNextId();
@@ -115,8 +126,8 @@ public class InMemoryTaskManager implements TaskManager {
 
     // обновить эпик
     @Override
-    public long updateEpic(Epic epic){
-        if(epic==null){
+    public long updateEpic(Epic epic) {
+        if (epic == null) {
             return -1;
         }
         hmEpics.put(epic.getId(),epic);
@@ -126,35 +137,43 @@ public class InMemoryTaskManager implements TaskManager {
 
     // удалить эпик по идентификатору
     @Override
-    public boolean removeEpic(long id){
+    public boolean removeEpic(long id) {
         Epic epic = hmEpics.remove(id);
-        if(epic!=null){
+        if (epic != null) {
             // при удалении эпика удаляем все подзадачи
-            for(long subtaskId: epic.getSubtaskIds()){
+            for (long subtaskId: epic.getSubtaskIds()) {
                 removeSubtask(subtaskId);
+                historyManager.remove(subtaskId);
             }
         }
-        return (epic!=null);
+        historyManager.remove(id);
+        return (epic != null);
     }
 
     // методы kanban.model.Subtask
 
     // список всех подзадачь
     @Override
-    public List<Subtask> getAllSubtasks(){
+    public List<Subtask> getAllSubtasks() {
         return new ArrayList<>( hmSubtasks.values() );
     }
 
     // удалить все подзадачи
     @Override
-    public void removeAllSubtasks(){
+    public void removeAllSubtasks() {
+        for(Long id: hmEpics.keySet()){
+            historyManager.remove(id);
+        }
+        for(Long id: hmSubtasks.keySet()){
+            historyManager.remove(id);
+        }
         hmSubtasks.clear();
         hmEpics.clear();
     }
 
     // получить подзадачу по идентификатору
     @Override
-    public Subtask getSubtask(long id){
+    public Subtask getSubtask(long id) {
         Subtask subtask = hmSubtasks.get(id);
         historyManager.add(subtask);
         return subtask;
@@ -162,14 +181,14 @@ public class InMemoryTaskManager implements TaskManager {
 
     // добавить новую подзадачу
     @Override
-    public long createSubtask(Subtask newSubtask){
-        if(newSubtask==null){
+    public long createSubtask(Subtask newSubtask) {
+        if (newSubtask == null) {
             return -1;
         }
         long epicId = newSubtask.getEpic();
         Epic epic = hmEpics.get(epicId);
         // если не найден эпик то возвращаем ошибку
-        if(epic==null){
+        if (epic == null) {
             return -1;
         }
         long id = getNextId();
@@ -184,26 +203,26 @@ public class InMemoryTaskManager implements TaskManager {
 
     // обновить подзадачу
     @Override
-    public long updateSubtask(Subtask subtask){
-        if(subtask==null){
+    public long updateSubtask(Subtask subtask) {
+        if (subtask == null) {
             return -1;
         }
         long id = subtask.getId();
         Subtask oldSubtask = hmSubtasks.get(id);
         // если не найдена подзадача то возвращаем ошибку
-        if(oldSubtask==null){
+        if (oldSubtask == null) {
             return -1;
         }
         Epic epic = hmEpics.get(oldSubtask.getEpic());
         // если не найден эпик то возвращаем ошибку
-        if(epic==null){
+        if (epic == null) {
             return -1;
         }
         // если у подзадачи поменялся эпик
         // то удаляем подзадачу у старого эпика и добавляем к новому
-        if(oldSubtask.getEpic()!=subtask.getEpic()){
+        if (oldSubtask.getEpic() != subtask.getEpic()) {
             Epic newEpic = hmEpics.get(subtask.getEpic());
-            if(newEpic==null){
+            if (newEpic == null) {
                 return -1;
             }
             // если не найден эпик то возвращаем ошибку
@@ -219,36 +238,37 @@ public class InMemoryTaskManager implements TaskManager {
 
     // удалить подзадачу по идентификатору
     @Override
-    public boolean removeSubtask(long id){
+    public boolean removeSubtask(long id) {
         Subtask subtask = hmSubtasks.get(id);
+        historyManager.remove(id);
         // если подзадача не найдена то ошибка
-        if(subtask==null){
+        if (subtask == null) {
             return false;
         }
         Epic epic = hmEpics.get(subtask.getEpic());
         // если эпик не найден то ошибка
-        if(epic==null){
+        if (epic == null) {
             return false;
         }
         epic.getSubtaskIds().remove(id);
         checkEpicState(epic.getId()); // обновляем статус эпика
         Subtask task = hmSubtasks.remove(id);
-        return (task!=null);
+        return (task != null);
     }
 
     // additional methods
 
     // получить все подзадачи эпика
     @Override
-    public List<Subtask> getEpicSubtasks(long epicId){
+    public List<Subtask> getEpicSubtasks(long epicId) {
         ArrayList<Subtask> result = new ArrayList<>();
         Epic epic = hmEpics.get(epicId);
-        if(epic==null){
+        if (epic == null) {
             return result;
         }
-        for(long id: epic.getSubtaskIds()){
+        for (long id: epic.getSubtaskIds()) {
             Subtask subtask = hmSubtasks.get(id);
-            if(subtask!=null){
+            if (subtask != null) {
                 result.add(subtask);
             }
         }
@@ -257,12 +277,12 @@ public class InMemoryTaskManager implements TaskManager {
 
     // последние 10 просмотренных задач
     @Override
-    public List<Task> getHistory(){
+    public List<Task> getHistory() {
         return historyManager.getHistory();
     }
 
     // получить новый идентификатор
-    private long getNextId(){
+    private long getNextId() {
         return counter++;
     }
 
@@ -272,32 +292,32 @@ public class InMemoryTaskManager implements TaskManager {
         boolean flagInProgress = false;
         boolean flagDone = false;
         Epic epic = hmEpics.get(id);
-        if(epic == null){
+        if (epic == null) {
             return;
         }
         //по умолчанию статус NEW
-        if(epic.getSubtaskIds().size()==0){
+        if (epic.getSubtaskIds().size() == 0) {
             epic.setState(NEW);
         }
         //проверяем статусы подзадачь
-        for(Long subtaskId: epic.getSubtaskIds()){
+        for (Long subtaskId: epic.getSubtaskIds()) {
             Subtask subtask = hmSubtasks.get(subtaskId);
-            if(subtask==null){
+            if (subtask == null) {
                 continue;
             }
             switch (subtask.getState()) {
                 case NEW: flagNew = true;
-                break;
+                    break;
                 case IN_PROGRESS: flagInProgress = true;
-                break;
+                    break;
                 case DONE: flagDone = true;
-                break;
+                    break;
             }
         }
         // если все подзадачи в статусе NEW, то статус эпика NEW
-        if(!flagInProgress && !flagDone){
+        if (!flagInProgress && !flagDone) {
             epic.setState(TaskState.NEW);
-        } else if(!flagNew && !flagInProgress){
+        } else if (!flagNew && !flagInProgress){
             // если все подзадачи в статусе DONE, то статус эпика DONE
             epic.setState(TaskState.DONE);
         } else {

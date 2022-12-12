@@ -21,7 +21,7 @@ public class Epic extends Task {
     // get / set
 
     public ArrayList<Long> getSubtaskIds() {
-        if(subtaskIds ==null){
+        if (subtaskIds == null) {
             subtaskIds = new ArrayList<>();
         }
         return subtaskIds;
@@ -40,9 +40,15 @@ public class Epic extends Task {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Epic)) return false;
-        if (!super.equals(o)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Epic)) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
         Epic epic = (Epic) o;
         return Objects.equals(subtaskIds, epic.subtaskIds);
     }
