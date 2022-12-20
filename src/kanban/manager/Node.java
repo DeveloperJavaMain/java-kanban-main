@@ -42,4 +42,11 @@ public class Node {
         this.next = next;
     }
 
+    public void insertBefore(Node nextNode){
+        if(nextNode==null) return;
+        next = nextNode;
+        prev = nextNode.prev;
+        nextNode.prev = this;
+        prev.next = this;
+    }
 }
