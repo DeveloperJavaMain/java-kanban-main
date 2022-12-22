@@ -13,4 +13,5 @@ public interface HistoryManager {
     // последние 10 просмотренных задач
     List<Task> getHistory();
 
+
 }

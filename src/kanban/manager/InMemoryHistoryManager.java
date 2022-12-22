@@ -1,16 +1,16 @@
 package kanban.manager;
 
 import kanban.model.Task;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 // хранит историю просмотров задач в памяти
 public class InMemoryHistoryManager implements HistoryManager {
-    // список просмотров
-    //private LinkedList<Task> history = new LinkedList<>();
     // ссылка на первый элемент списка
-    private Node head = null;
+    private Node head;
+    private Node tail;
     // ссылки на элементы истории по id
     private final HashMap<Long, Node> index = new HashMap<>();
 
@@ -20,9 +20,9 @@ public class InMemoryHistoryManager implements HistoryManager {
         if (task == null) {
             return;
         }
-        removeNode(index.get(task.getId()));
+        removeNode(index.remove(task.getId()));
         linkLast(task);
-        index.put(task.getId(), head.getPrev());
+        index.put(task.getId(), tail);
     }
 
     // удалить запись по истории по id
@@ -45,11 +45,13 @@ public class InMemoryHistoryManager implements HistoryManager {
 
     // добавить запись в конец списка
     private void linkLast(Task task) {
-        Node node = new Node(task);
-        if (head == null) {
+        Node node = new Node(task, tail, null);
+        if(head == null){
             head = node;
+        } else {
+            tail.next = node;
         }
-        node.insertBefore(head);
+        tail = node;
     }
 
     // получить историю в виде списка
@@ -57,14 +59,10 @@ public class InMemoryHistoryManager implements HistoryManager {
         ArrayList<Task> res = new ArrayList<>();
         if (head != null) {
             Node node = head;
-            // head - первый элемент списка
-            do {
-                // добавляем в списох значение из текущего узла
-                res.add(node.getValue());
-                // переходим к следующему узлу
-                node = node.getNext();
-                // если этот следующий узел head, значит мы прошли всю цепочку - заканчиваем цикл
-            } while (node != head);
+            while(node!=null){
+                res.add(node.value);
+                node = node.next;
+            }
         }
         return res;
     }
@@ -74,12 +72,14 @@ public class InMemoryHistoryManager implements HistoryManager {
         if (node == null) return;
         if (node == head) {
             // поправим ссылку на первый элемент списка
-            head = (head.getNext() != head) ? head.getNext() : null;
+            head = head.next;
         }
-        node.getPrev().setNext(node.getNext());
-        node.getNext().setPrev(node.getPrev());
-        node.setPrev(null);
-        node.setNext(null);
-        node.setValue(null);
+        if(node.prev!=null) {
+            node.prev.next = node.next;
+        }
+        if(node.next != null) {
+            node.next.prev = node.prev;
+        }
+
     }
 }
