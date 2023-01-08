@@ -48,6 +48,7 @@ public class InMemoryHistoryManager implements HistoryManager {
         Node node = new Node(task, tail, null);
         if(head == null){
             head = node;
+            tail = head;
         } else {
             tail.next = node;
         }
@@ -73,13 +74,22 @@ public class InMemoryHistoryManager implements HistoryManager {
         if (node == head) {
             // поправим ссылку на первый элемент списка
             head = head.next;
+            if(head==null) {
+                tail = null;
+            } else {
+                head.prev = null;
+            }
         }
         if(node.prev!=null) {
             node.prev.next = node.next;
+            if(node==tail){
+                tail = node.prev;
+            }
         }
         if(node.next != null) {
             node.next.prev = node.prev;
         }
+
 
     }
 }
