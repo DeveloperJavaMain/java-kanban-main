@@ -1,5 +1,6 @@
 package kanban.manager;
 
+import kanban.exception.ManagerLoadException;
 import kanban.exception.ManagerSaveException;
 import kanban.model.*;
 
@@ -45,7 +46,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
             String line = Files.readString(Path.of(storeFile.toURI()));
             restore(line);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new ManagerLoadException("Error on load data", e);
         }
     }
 
