@@ -3,18 +3,16 @@ package kanban.model;
 
 import java.util.Objects;
 
+import static kanban.model.TaskState.NEW;
+
 public class Task {
-    // константы статусов
-    public static final int NEW=0;
-    public static final int IN_PROGRESS=1;
-    public static final int DONE=2;
     // идентификатор
     private long id;
     // название и описание
     private String name;
     private String description;
     // статус
-    private int state = NEW;
+    private TaskState state = NEW;
 
     // constructors
 
@@ -52,32 +50,18 @@ public class Task {
         this.description = description;
     }
 
-    public int getState() {
+    public TaskState getState() {
         return state;
     }
 
-    public void setState(int state) {
+    public void setState(TaskState state) {
         this.state = state;
     }
 
     // toString
-
-    // возвращает текстовое название статуса
-    public String getStateName()
-    {
-        switch (state){
-            case NEW: return "New";
-            case IN_PROGRESS: return "InProgress";
-            case DONE: return "Done";
-            default: return "Unknown";
-        }
-    }
-
-    // toString
-
     @Override
     public String toString() {
-        return "kanban.model.Task{" +
+        return "Task{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
@@ -86,11 +70,14 @@ public class Task {
     }
 
     // equals
-
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Task)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Task)) {
+            return false;
+        }
         Task task = (Task) o;
         return id == task.id &&
                 state == task.state &&
