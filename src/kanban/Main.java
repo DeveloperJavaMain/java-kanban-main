@@ -13,8 +13,7 @@ import java.util.List;
 public class Main {
 
     public static void main(String[] args) {
-        //testCase1();
-        testCase2(); // выполняем только новый сценарий тестирования
+        testCase3(); // выполняем только новый сценарий тестирования
     }
 
     // сценарий тестирования по ТЗ-3
@@ -158,6 +157,74 @@ public class Main {
         System.out.println("--- History 7 ---\tдолжно быть записей: 10");
         printoutList(manager.getHistory());
     }
+
+    // сценарий тестирования по ТЗ-5
+    private static void testCase3() {
+        // тестирование
+        TaskManager manager = Manager.getDefault();
+
+//        Task task1 = new Task("task 1", "пример простой задачи 1");
+
+        // один эпик с 3 подзадачами
+        Epic epic1 = new Epic("epic 1", "пример эпика 1");
+        long epicId1 = manager.createEpic(epic1);
+        Subtask subtask1 = new Subtask("subtask 1", "пример подзадачи 1", epicId1);
+        Subtask subtask2 = new Subtask("subtask 2", "пример подзадачи 2", epicId1);
+        Subtask subtask3 = new Subtask("subtask 3", "пример подзадачи 3", epicId1);
+        manager.createSubtask(subtask1);
+        manager.createSubtask(subtask2);
+        manager.createSubtask(subtask3);
+        long subtaskId1 = subtask1.getId();
+        long subtaskId2 = subtask2.getId();
+        long subtaskId3 = subtask3.getId();
+
+        // эпик без подзадач
+        Epic epic2 = new Epic("epic 2", "пример эпика 2");
+        long epicId2 = manager.createEpic(epic2);
+
+        /*
+        запросите созданные задачи несколько раз в разном порядке;
+        после каждого запроса выведите историю и убедитесь, что в ней нет повторов;
+        */
+
+        manager.getSubtask(subtaskId2);
+        System.out.println("must be: 'subtask 2'");
+        printoutList(manager.getHistory());
+
+        manager.getEpic(epicId2);
+        System.out.println("must be: 'subtask 2', 'epic 2'");
+        printoutList(manager.getHistory());
+
+        manager.getEpic(epicId1);
+        System.out.println("must be: 'subtask 2', 'epic 2', 'epic 1'");
+        printoutList(manager.getHistory());
+
+        manager.getSubtask(subtaskId1);
+        System.out.println("must be: 'subtask 2', 'epic 2', 'epic 1', 'subtask 1'");
+        printoutList(manager.getHistory());
+
+        manager.getSubtask(subtaskId2);
+        System.out.println("must be: 'epic 2', 'epic 1', 'subtask 1', 'subtask 2'");
+        printoutList(manager.getHistory());
+
+        manager.getEpic(epicId1);
+        System.out.println("must be: 'epic 2', 'subtask 1', 'subtask 2', 'epic 1'");
+        printoutList(manager.getHistory());
+
+        // удалите задачу, которая есть в истории, и проверьте, что при печати она не будет выводиться
+        manager.removeSubtask(subtaskId2);
+        System.out.println("must be: 'epic 2', 'subtask 1', 'epic 1'");
+        printoutList(manager.getHistory());
+
+        // удалите эпик с тремя подзадачами и убедитесь, что из истории удалился как сам эпик,
+        // так и все его подзадачи
+        manager.removeEpic(epicId1);
+        System.out.println("must be: 'epic 2'");
+        printoutList(manager.getHistory());
+
+
+    }
+
 
     // выводим список задач с указанием типа
     private static void printoutList(List<Task> list) {
