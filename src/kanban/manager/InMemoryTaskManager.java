@@ -11,37 +11,40 @@ import java.util.List;
 
 import static kanban.model.TaskState.*;
 
-// Менеджер задачь, хранит данные в памяти
+// РњРµРЅРµРґР¶РµСЂ Р·Р°РґР°С‡СЊ, С…СЂР°РЅРёС‚ РґР°РЅРЅС‹Рµ РІ РїР°РјСЏС‚Рё
 
 public class InMemoryTaskManager implements TaskManager {
 
-    // менеджер истории просмотров
+    // РјРµРЅРµРґР¶РµСЂ РёСЃС‚РѕСЂРёРё РїСЂРѕСЃРјРѕС‚СЂРѕРІ
     private final HistoryManager historyManager = Manager.getDefaultHistory();
 
-    // счетчик для получения уникального идентификатора
+    // СЃС‡РµС‚С‡РёРє РґР»СЏ РїРѕР»СѓС‡РµРЅРёСЏ СѓРЅРёРєР°Р»СЊРЅРѕРіРѕ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂР°
     private static long counter = 0;
 
-    private HashMap<Long, Task> hmTasks = new HashMap<>();      // список kanban.model.Task
-    private HashMap<Long, Epic> hmEpics = new HashMap<>();      // список kanban.model.Epic
-    private HashMap<Long, Subtask> hmSubtasks = new HashMap<>();// список kanban.model.Subtask
+    private HashMap<Long, Task> hmTasks = new HashMap<>();      // СЃРїРёСЃРѕРє kanban.model.Task
+    private HashMap<Long, Epic> hmEpics = new HashMap<>();      // СЃРїРёСЃРѕРє kanban.model.Epic
+    private HashMap<Long, Subtask> hmSubtasks = new HashMap<>();// СЃРїРёСЃРѕРє kanban.model.Subtask
 
     // methods
 
-    // методы kanban.model.Task
+    // РјРµС‚РѕРґС‹ kanban.model.Task
 
-    // список всех задачь
+    // СЃРїРёСЃРѕРє РІСЃРµС… Р·Р°РґР°С‡СЊ
     @Override
     public List<Task> getAllTasks() {
         return new ArrayList<>( hmTasks.values() );
     }
 
-    // удалить все задачи
+    // СѓРґР°Р»РёС‚СЊ РІСЃРµ Р·Р°РґР°С‡Рё
     @Override
     public void removeAllTasks() {
+        for(Long id: hmTasks.keySet()){
+            historyManager.remove(id);
+        }
         hmTasks.clear();
     }
 
-    // получить задачу по идентификатору
+    // РїРѕР»СѓС‡РёС‚СЊ Р·Р°РґР°С‡Сѓ РїРѕ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂСѓ
     @Override
     public Task getTask(long id) {
         Task task = hmTasks.get(id);
@@ -49,7 +52,7 @@ public class InMemoryTaskManager implements TaskManager {
         return task;
     }
 
-    // добавить новую задачу
+    // РґРѕР±Р°РІРёС‚СЊ РЅРѕРІСѓСЋ Р·Р°РґР°С‡Сѓ
     @Override
     public long createTask(Task newTask) {
         if (newTask == null) {
@@ -61,7 +64,7 @@ public class InMemoryTaskManager implements TaskManager {
         return id;
     }
 
-    // обновить задачу
+    // РѕР±РЅРѕРІРёС‚СЊ Р·Р°РґР°С‡Сѓ
     @Override
     public long updateTask(Task task){
         if (task == null) {
@@ -71,29 +74,36 @@ public class InMemoryTaskManager implements TaskManager {
         return task.getId();
     }
 
-    // удалить задачу
+    // СѓРґР°Р»РёС‚СЊ Р·Р°РґР°С‡Сѓ
     @Override
     public boolean removeTask(long id) {
         Task task = hmTasks.remove(id);
+        historyManager.remove(id);
         return (task != null);
     }
 
-    // методы kanban.model.Epic
+    // РјРµС‚РѕРґС‹ kanban.model.Epic
 
-    // список всех эпиков
+    // СЃРїРёСЃРѕРє РІСЃРµС… СЌРїРёРєРѕРІ
     @Override
     public List<Epic> getAllEpics() {
         return new ArrayList<>( hmEpics.values() );
     }
 
-    // удалить все эпики
+    // СѓРґР°Р»РёС‚СЊ РІСЃРµ СЌРїРёРєРё
     @Override
     public void removeAllEpics() {
+        for(Long id: hmEpics.keySet()){
+            historyManager.remove(id);
+        }
+        for(Long id: hmSubtasks.keySet()){
+            historyManager.remove(id);
+        }
         hmEpics.clear();
         hmSubtasks.clear();
     }
 
-    // получить эпик по идентификатору
+    // РїРѕР»СѓС‡РёС‚СЊ СЌРїРёРє РїРѕ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂСѓ
     @Override
     public Epic getEpic(long id) {
         Epic epic = hmEpics.get(id);
@@ -101,7 +111,7 @@ public class InMemoryTaskManager implements TaskManager {
         return epic;
     }
 
-    // добавить новый эпик
+    // РґРѕР±Р°РІРёС‚СЊ РЅРѕРІС‹Р№ СЌРїРёРє
     @Override
     public long createEpic(Epic newEpic) {
         if (newEpic == null) {
@@ -110,50 +120,58 @@ public class InMemoryTaskManager implements TaskManager {
         long id = getNextId();
         newEpic.setId(id);
         hmEpics.put(id,newEpic);
-        checkEpicState(id); // обновляем статус
+        checkEpicState(id); // РѕР±РЅРѕРІР»СЏРµРј СЃС‚Р°С‚СѓСЃ
         return id;
     }
 
-    // обновить эпик
+    // РѕР±РЅРѕРІРёС‚СЊ СЌРїРёРє
     @Override
     public long updateEpic(Epic epic) {
         if (epic == null) {
             return -1;
         }
         hmEpics.put(epic.getId(),epic);
-        checkEpicState(epic.getId()); // обновляем статус
+        checkEpicState(epic.getId()); // РѕР±РЅРѕРІР»СЏРµРј СЃС‚Р°С‚СѓСЃ
         return epic.getId();
     }
 
-    // удалить эпик по идентификатору
+    // СѓРґР°Р»РёС‚СЊ СЌРїРёРє РїРѕ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂСѓ
     @Override
     public boolean removeEpic(long id) {
         Epic epic = hmEpics.remove(id);
         if (epic != null) {
-            // при удалении эпика удаляем все подзадачи
+            // РїСЂРё СѓРґР°Р»РµРЅРёРё СЌРїРёРєР° СѓРґР°Р»СЏРµРј РІСЃРµ РїРѕРґР·Р°РґР°С‡Рё
             for (long subtaskId: epic.getSubtaskIds()) {
                 removeSubtask(subtaskId);
+                historyManager.remove(subtaskId);
             }
         }
+        historyManager.remove(id);
         return (epic != null);
     }
 
-    // методы kanban.model.Subtask
+    // РјРµС‚РѕРґС‹ kanban.model.Subtask
 
-    // список всех подзадачь
+    // СЃРїРёСЃРѕРє РІСЃРµС… РїРѕРґР·Р°РґР°С‡СЊ
     @Override
     public List<Subtask> getAllSubtasks() {
         return new ArrayList<>( hmSubtasks.values() );
     }
 
-    // удалить все подзадачи
+    // СѓРґР°Р»РёС‚СЊ РІСЃРµ РїРѕРґР·Р°РґР°С‡Рё
     @Override
     public void removeAllSubtasks() {
+        for(Long id: hmEpics.keySet()){
+            historyManager.remove(id);
+        }
+        for(Long id: hmSubtasks.keySet()){
+            historyManager.remove(id);
+        }
         hmSubtasks.clear();
         hmEpics.clear();
     }
 
-    // получить подзадачу по идентификатору
+    // РїРѕР»СѓС‡РёС‚СЊ РїРѕРґР·Р°РґР°С‡Сѓ РїРѕ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂСѓ
     @Override
     public Subtask getSubtask(long id) {
         Subtask subtask = hmSubtasks.get(id);
@@ -161,7 +179,7 @@ public class InMemoryTaskManager implements TaskManager {
         return subtask;
     }
 
-    // добавить новую подзадачу
+    // РґРѕР±Р°РІРёС‚СЊ РЅРѕРІСѓСЋ РїРѕРґР·Р°РґР°С‡Сѓ
     @Override
     public long createSubtask(Subtask newSubtask) {
         if (newSubtask == null) {
@@ -169,21 +187,21 @@ public class InMemoryTaskManager implements TaskManager {
         }
         long epicId = newSubtask.getEpic();
         Epic epic = hmEpics.get(epicId);
-        // если не найден эпик то возвращаем ошибку
+        // РµСЃР»Рё РЅРµ РЅР°Р№РґРµРЅ СЌРїРёРє С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµРј РѕС€РёР±РєСѓ
         if (epic == null) {
             return -1;
         }
         long id = getNextId();
         newSubtask.setId(id);
         hmSubtasks.put(id,newSubtask);
-        // добавляем новую подзадачу к эпику
+        // РґРѕР±Р°РІР»СЏРµРј РЅРѕРІСѓСЋ РїРѕРґР·Р°РґР°С‡Сѓ Рє СЌРїРёРєСѓ
         epic.getSubtaskIds().add(id);
-        // обновляем статус эпика
+        // РѕР±РЅРѕРІР»СЏРµРј СЃС‚Р°С‚СѓСЃ СЌРїРёРєР°
         checkEpicState(id);
         return id;
     }
 
-    // обновить подзадачу
+    // РѕР±РЅРѕРІРёС‚СЊ РїРѕРґР·Р°РґР°С‡Сѓ
     @Override
     public long updateSubtask(Subtask subtask) {
         if (subtask == null) {
@@ -191,55 +209,56 @@ public class InMemoryTaskManager implements TaskManager {
         }
         long id = subtask.getId();
         Subtask oldSubtask = hmSubtasks.get(id);
-        // если не найдена подзадача то возвращаем ошибку
+        // РµСЃР»Рё РЅРµ РЅР°Р№РґРµРЅР° РїРѕРґР·Р°РґР°С‡Р° С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµРј РѕС€РёР±РєСѓ
         if (oldSubtask == null) {
             return -1;
         }
         Epic epic = hmEpics.get(oldSubtask.getEpic());
-        // если не найден эпик то возвращаем ошибку
+        // РµСЃР»Рё РЅРµ РЅР°Р№РґРµРЅ СЌРїРёРє С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµРј РѕС€РёР±РєСѓ
         if (epic == null) {
             return -1;
         }
-        // если у подзадачи поменялся эпик
-        // то удаляем подзадачу у старого эпика и добавляем к новому
+        // РµСЃР»Рё Сѓ РїРѕРґР·Р°РґР°С‡Рё РїРѕРјРµРЅСЏР»СЃСЏ СЌРїРёРє
+        // С‚Рѕ СѓРґР°Р»СЏРµРј РїРѕРґР·Р°РґР°С‡Сѓ Сѓ СЃС‚Р°СЂРѕРіРѕ СЌРїРёРєР° Рё РґРѕР±Р°РІР»СЏРµРј Рє РЅРѕРІРѕРјСѓ
         if (oldSubtask.getEpic() != subtask.getEpic()) {
             Epic newEpic = hmEpics.get(subtask.getEpic());
             if (newEpic == null) {
                 return -1;
             }
-            // если не найден эпик то возвращаем ошибку
+            // РµСЃР»Рё РЅРµ РЅР°Р№РґРµРЅ СЌРїРёРє С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµРј РѕС€РёР±РєСѓ
             epic.getSubtaskIds().remove(id);
-            checkEpicState(epic.getId()); // обновляем статус старого эпика
+            checkEpicState(epic.getId()); // РѕР±РЅРѕРІР»СЏРµРј СЃС‚Р°С‚СѓСЃ СЃС‚Р°СЂРѕРіРѕ СЌРїРёРєР°
             newEpic.getSubtaskIds().add(id);
             epic = newEpic;
         }
         hmSubtasks.put(id,subtask);
-        checkEpicState(epic.getId()); // обновляем статус эпика
+        checkEpicState(epic.getId()); // РѕР±РЅРѕРІР»СЏРµРј СЃС‚Р°С‚СѓСЃ СЌРїРёРєР°
         return subtask.getId();
     }
 
-    // удалить подзадачу по идентификатору
+    // СѓРґР°Р»РёС‚СЊ РїРѕРґР·Р°РґР°С‡Сѓ РїРѕ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂСѓ
     @Override
     public boolean removeSubtask(long id) {
         Subtask subtask = hmSubtasks.get(id);
-        // если подзадача не найдена то ошибка
+        historyManager.remove(id);
+        // РµСЃР»Рё РїРѕРґР·Р°РґР°С‡Р° РЅРµ РЅР°Р№РґРµРЅР° С‚Рѕ РѕС€РёР±РєР°
         if (subtask == null) {
             return false;
         }
         Epic epic = hmEpics.get(subtask.getEpic());
-        // если эпик не найден то ошибка
+        // РµСЃР»Рё СЌРїРёРє РЅРµ РЅР°Р№РґРµРЅ С‚Рѕ РѕС€РёР±РєР°
         if (epic == null) {
             return false;
         }
         epic.getSubtaskIds().remove(id);
-        checkEpicState(epic.getId()); // обновляем статус эпика
+        checkEpicState(epic.getId()); // РѕР±РЅРѕРІР»СЏРµРј СЃС‚Р°С‚СѓСЃ СЌРїРёРєР°
         Subtask task = hmSubtasks.remove(id);
         return (task != null);
     }
 
     // additional methods
 
-    // получить все подзадачи эпика
+    // РїРѕР»СѓС‡РёС‚СЊ РІСЃРµ РїРѕРґР·Р°РґР°С‡Рё СЌРїРёРєР°
     @Override
     public List<Subtask> getEpicSubtasks(long epicId) {
         ArrayList<Subtask> result = new ArrayList<>();
@@ -256,18 +275,18 @@ public class InMemoryTaskManager implements TaskManager {
         return result;
     }
 
-    // последние 10 просмотренных задач
+    // РїРѕСЃР»РµРґРЅРёРµ 10 РїСЂРѕСЃРјРѕС‚СЂРµРЅРЅС‹С… Р·Р°РґР°С‡
     @Override
     public List<Task> getHistory() {
         return historyManager.getHistory();
     }
 
-    // получить новый идентификатор
+    // РїРѕР»СѓС‡РёС‚СЊ РЅРѕРІС‹Р№ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ
     private long getNextId() {
         return counter++;
     }
 
-    // рассчет статуса эпика
+    // СЂР°СЃСЃС‡РµС‚ СЃС‚Р°С‚СѓСЃР° СЌРїРёРєР°
     private void checkEpicState(long id){
         boolean flagNew = false;
         boolean flagInProgress = false;
@@ -276,11 +295,11 @@ public class InMemoryTaskManager implements TaskManager {
         if (epic == null) {
             return;
         }
-        //по умолчанию статус NEW
+        //РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ СЃС‚Р°С‚СѓСЃ NEW
         if (epic.getSubtaskIds().size() == 0) {
             epic.setState(NEW);
         }
-        //проверяем статусы подзадачь
+        //РїСЂРѕРІРµСЂСЏРµРј СЃС‚Р°С‚СѓСЃС‹ РїРѕРґР·Р°РґР°С‡СЊ
         for (Long subtaskId: epic.getSubtaskIds()) {
             Subtask subtask = hmSubtasks.get(subtaskId);
             if (subtask == null) {
@@ -295,14 +314,14 @@ public class InMemoryTaskManager implements TaskManager {
                 break;
             }
         }
-        // если все подзадачи в статусе NEW, то статус эпика NEW
+        // РµСЃР»Рё РІСЃРµ РїРѕРґР·Р°РґР°С‡Рё РІ СЃС‚Р°С‚СѓСЃРµ NEW, С‚Рѕ СЃС‚Р°С‚СѓСЃ СЌРїРёРєР° NEW
         if (!flagInProgress && !flagDone) {
             epic.setState(TaskState.NEW);
         } else if (!flagNew && !flagInProgress){
-            // если все подзадачи в статусе DONE, то статус эпика DONE
+            // РµСЃР»Рё РІСЃРµ РїРѕРґР·Р°РґР°С‡Рё РІ СЃС‚Р°С‚СѓСЃРµ DONE, С‚Рѕ СЃС‚Р°С‚СѓСЃ СЌРїРёРєР° DONE
             epic.setState(TaskState.DONE);
         } else {
-            // иначе статус эпика IN_PROGRESS
+            // РёРЅР°С‡Рµ СЃС‚Р°С‚СѓСЃ СЌРїРёРєР° IN_PROGRESS
             epic.setState(TaskState.IN_PROGRESS);
         }
     }
