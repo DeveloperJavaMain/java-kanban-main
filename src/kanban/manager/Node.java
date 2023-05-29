@@ -4,41 +4,15 @@ import kanban.model.Task;
 
 // узел двусвязного списка для хранения задач
 public class Node {
-    private Task value;
-    private Node prev;
-    private Node next;
+    Task value;
+    Node prev;
+    Node next;
 
     // constructors
 
-    public Node() {
-    }
-
-    public Node(Task value) {
-        this.value = value;
-    }
-
-    // get/set
-    public Task getValue() {
-        return value;
-    }
-
-    public void setValue(Task value) {
-        this.value = value;
-    }
-
-    public Node getPrev() {
-        return prev;
-    }
-
-    public void setPrev(Node prev) {
+    public Node(Task task, Node prev, Node next) {
+        value = task;
         this.prev = prev;
-    }
-
-    public Node getNext() {
-        return next;
-    }
-
-    public void setNext(Node next) {
         this.next = next;
     }
 
