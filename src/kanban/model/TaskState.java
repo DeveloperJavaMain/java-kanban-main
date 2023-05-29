@@ -1,6 +1,6 @@
 package kanban.model;
 
-// статусы задач
+// СЃС‚Р°С‚СѓСЃС‹ Р·Р°РґР°С‡
 public enum TaskState {
     NEW, IN_PROGRESS, DONE;
 }

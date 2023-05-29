@@ -27,18 +27,22 @@ public class InMemoryTaskManager implements TaskManager {
 
     // methods
 
+    protected void setCounter(long value) {
+        counter = value;
+    }
+
     // методы kanban.model.Task
 
     // список всех задачь
     @Override
     public List<Task> getAllTasks() {
-        return new ArrayList<>( hmTasks.values() );
+        return new ArrayList<>(hmTasks.values());
     }
 
     // удалить все задачи
     @Override
     public void removeAllTasks() {
-        for(Long id: hmTasks.keySet()){
+        for (Long id : hmTasks.keySet()) {
             historyManager.remove(id);
         }
         hmTasks.clear();
@@ -53,24 +57,28 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     // добавить новую задачу
+    protected long createTask(Task newTask, long id) {
+        newTask.setId(id);
+        hmTasks.put(id, newTask);
+        return id;
+    }
+
     @Override
     public long createTask(Task newTask) {
         if (newTask == null) {
             return -1;
         }
         long id = getNextId();
-        newTask.setId(id);
-        hmTasks.put(id,newTask);
-        return id;
+        return createTask(newTask, id);
     }
 
     // обновить задачу
     @Override
-    public long updateTask(Task task){
+    public long updateTask(Task task) {
         if (task == null) {
             return -1;
         }
-        hmTasks.put(task.getId(),task);
+        hmTasks.put(task.getId(), task);
         return task.getId();
     }
 
@@ -87,16 +95,16 @@ public class InMemoryTaskManager implements TaskManager {
     // список всех эпиков
     @Override
     public List<Epic> getAllEpics() {
-        return new ArrayList<>( hmEpics.values() );
+        return new ArrayList<>(hmEpics.values());
     }
 
     // удалить все эпики
     @Override
     public void removeAllEpics() {
-        for(Long id: hmEpics.keySet()){
+        for (Long id : hmEpics.keySet()) {
             historyManager.remove(id);
         }
-        for(Long id: hmSubtasks.keySet()){
+        for (Long id : hmSubtasks.keySet()) {
             historyManager.remove(id);
         }
         hmEpics.clear();
@@ -112,14 +120,19 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     // добавить новый эпик
+    protected long createEpic(Epic newEpic, long id) {
+        newEpic.setId(id);
+        hmEpics.put(id, newEpic);
+        return id;
+    }
+
     @Override
     public long createEpic(Epic newEpic) {
         if (newEpic == null) {
             return -1;
         }
         long id = getNextId();
-        newEpic.setId(id);
-        hmEpics.put(id,newEpic);
+        createEpic(newEpic, id);
         checkEpicState(id); // обновляем статус
         return id;
     }
@@ -130,7 +143,7 @@ public class InMemoryTaskManager implements TaskManager {
         if (epic == null) {
             return -1;
         }
-        hmEpics.put(epic.getId(),epic);
+        hmEpics.put(epic.getId(), epic);
         checkEpicState(epic.getId()); // обновляем статус
         return epic.getId();
     }
@@ -141,7 +154,7 @@ public class InMemoryTaskManager implements TaskManager {
         Epic epic = hmEpics.remove(id);
         if (epic != null) {
             // при удалении эпика удаляем все подзадачи
-            for (long subtaskId: epic.getSubtaskIds()) {
+            for (long subtaskId : epic.getSubtaskIds()) {
                 removeSubtask(subtaskId);
                 historyManager.remove(subtaskId);
             }
@@ -155,16 +168,16 @@ public class InMemoryTaskManager implements TaskManager {
     // список всех подзадачь
     @Override
     public List<Subtask> getAllSubtasks() {
-        return new ArrayList<>( hmSubtasks.values() );
+        return new ArrayList<>(hmSubtasks.values());
     }
 
     // удалить все подзадачи
     @Override
     public void removeAllSubtasks() {
-        for(Long id: hmEpics.keySet()){
+        for (Long id : hmEpics.keySet()) {
             historyManager.remove(id);
         }
-        for(Long id: hmSubtasks.keySet()){
+        for (Long id : hmSubtasks.keySet()) {
             historyManager.remove(id);
         }
         hmSubtasks.clear();
@@ -179,25 +192,27 @@ public class InMemoryTaskManager implements TaskManager {
         return subtask;
     }
 
+    protected long createSubtask(Subtask newSubtask, long id) {
+        newSubtask.setId(id);
+        hmSubtasks.put(id, newSubtask);
+        // добавляем новую подзадачу к эпику
+        Epic epic = hmEpics.get(newSubtask.getEpic());
+        if(epic!=null) {
+            epic.getSubtaskIds().add(id);
+        }
+        return id;
+    }
+
     // добавить новую подзадачу
     @Override
     public long createSubtask(Subtask newSubtask) {
         if (newSubtask == null) {
             return -1;
         }
-        long epicId = newSubtask.getEpic();
-        Epic epic = hmEpics.get(epicId);
-        // если не найден эпик то возвращаем ошибку
-        if (epic == null) {
-            return -1;
-        }
         long id = getNextId();
-        newSubtask.setId(id);
-        hmSubtasks.put(id,newSubtask);
-        // добавляем новую подзадачу к эпику
-        epic.getSubtaskIds().add(id);
+        createSubtask(newSubtask, id);
         // обновляем статус эпика
-        checkEpicState(id);
+        checkEpicState(newSubtask.getEpic());
         return id;
     }
 
@@ -231,7 +246,7 @@ public class InMemoryTaskManager implements TaskManager {
             newEpic.getSubtaskIds().add(id);
             epic = newEpic;
         }
-        hmSubtasks.put(id,subtask);
+        hmSubtasks.put(id, subtask);
         checkEpicState(epic.getId()); // обновляем статус эпика
         return subtask.getId();
     }
@@ -266,7 +281,7 @@ public class InMemoryTaskManager implements TaskManager {
         if (epic == null) {
             return result;
         }
-        for (long id: epic.getSubtaskIds()) {
+        for (long id : epic.getSubtaskIds()) {
             Subtask subtask = hmSubtasks.get(id);
             if (subtask != null) {
                 result.add(subtask);
@@ -287,7 +302,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     // рассчет статуса эпика
-    private void checkEpicState(long id){
+    private void checkEpicState(long id) {
         boolean flagNew = false;
         boolean flagInProgress = false;
         boolean flagDone = false;
@@ -300,29 +315,46 @@ public class InMemoryTaskManager implements TaskManager {
             epic.setState(NEW);
         }
         //проверяем статусы подзадачь
-        for (Long subtaskId: epic.getSubtaskIds()) {
+        for (Long subtaskId : epic.getSubtaskIds()) {
             Subtask subtask = hmSubtasks.get(subtaskId);
             if (subtask == null) {
                 continue;
             }
             switch (subtask.getState()) {
-                case NEW: flagNew = true;
-                break;
-                case IN_PROGRESS: flagInProgress = true;
-                break;
-                case DONE: flagDone = true;
-                break;
+                case NEW:
+                    flagNew = true;
+                    break;
+                case IN_PROGRESS:
+                    flagInProgress = true;
+                    break;
+                case DONE:
+                    flagDone = true;
+                    break;
             }
         }
         // если все подзадачи в статусе NEW, то статус эпика NEW
         if (!flagInProgress && !flagDone) {
             epic.setState(TaskState.NEW);
-        } else if (!flagNew && !flagInProgress){
+        } else if (!flagNew && !flagInProgress) {
             // если все подзадачи в статусе DONE, то статус эпика DONE
             epic.setState(TaskState.DONE);
         } else {
             // иначе статус эпика IN_PROGRESS
             epic.setState(TaskState.IN_PROGRESS);
         }
+    }
+
+    // get Task by ID
+    protected Task getById(long id){
+        Task task = hmTasks.get(id);
+        if(task!=null) return task;
+        task = hmSubtasks.get(id);
+        if(task!=null) return task;
+        task = hmEpics.get(id);
+        return task;
+    }
+
+    protected HistoryManager getHistoryManager() {
+        return historyManager;
     }
 }
