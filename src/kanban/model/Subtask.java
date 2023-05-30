@@ -34,7 +34,7 @@ public class Subtask extends Task {
 
     @Override
     public String toString() {
-        return "kanban.model.Subtask{" + super.toString() + ", " +
+        return "Subtask{" + super.toString() + ", " +
                 "epic=" + epicId +
                 '}';
     }

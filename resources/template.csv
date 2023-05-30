@@ -1,0 +1,10 @@
+id,type,name,status,description,epic
+0,TASK,"task 1",NEW,"пример простой задачи 1",
+1,TASK,"task 2",NEW,"пример простой задачи 2",
+2,EPIC,"epic 1",NEW,"пример эпика 1",
+5,EPIC,"epic 2",NEW,"пример эпика 2",
+3,SUBTASK,"subtask 1",NEW,"пример подзадачи 1",2
+4,SUBTASK,"subtask 2",NEW,"пример подзадачи 2",2
+6,SUBTASK,"subtask 3",NEW,"пример подзадачи 3",5
+
+5,3,1,2,4

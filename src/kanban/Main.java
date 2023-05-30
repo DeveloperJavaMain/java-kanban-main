@@ -1,6 +1,5 @@
 package kanban;
 
-import kanban.manager.InMemoryTaskManager;
 import kanban.manager.Manager;
 import kanban.manager.TaskManager;
 import kanban.model.Epic;
@@ -254,8 +253,8 @@ public class Main {
         for (Epic epic: manager.getAllEpics()) {
             System.out.printf("epic %7d %9s %15s %s\n",
                     epic.getId(),epic.getState(),epic.getName(),epic.getDescription());
-            for (long id: epic.getSubtaskIds()) {
-                Subtask subtask = manager.getSubtask(id);
+            for (Subtask subtask: epic.getSubtasks()) {
+                //Subtask subtask = manager.getSubtask(id);
                 System.out.printf("%12d %9s %15s %s\n",
                         subtask.getId(),subtask.getState(),subtask.getName(),subtask.getDescription());
             }

@@ -68,4 +68,11 @@ public interface TaskManager {
 
     // последние 10 просмотренных задач
     List<Task> getHistory();
+
+    // список task и subtask в порядке startTime
+    List<Task> getPrioritizedTasks();
+
+    // проверка пересечений
+    boolean validateIntersections(Task task);
+
 }

@@ -46,7 +46,7 @@ public class InMemoryHistoryManager implements HistoryManager {
     // добавить запись в конец списка
     private void linkLast(Task task) {
         Node node = new Node(task, tail, null);
-        if(head == null){
+        if (head == null) {
             head = node;
             tail = head;
         } else {
@@ -60,7 +60,7 @@ public class InMemoryHistoryManager implements HistoryManager {
         ArrayList<Task> res = new ArrayList<>();
         if (head != null) {
             Node node = head;
-            while(node!=null){
+            while (node != null) {
                 res.add(node.value);
                 node = node.next;
             }
@@ -74,19 +74,19 @@ public class InMemoryHistoryManager implements HistoryManager {
         if (node == head) {
             // поправим ссылку на первый элемент списка
             head = head.next;
-            if(head==null) {
+            if (head == null) {
                 tail = null;
             } else {
                 head.prev = null;
             }
         }
-        if(node.prev!=null) {
+        if (node.prev != null) {
             node.prev.next = node.next;
-            if(node==tail){
+            if (node == tail) {
                 tail = node.prev;
             }
         }
-        if(node.next != null) {
+        if (node.next != null) {
             node.next.prev = node.prev;
         }
 
