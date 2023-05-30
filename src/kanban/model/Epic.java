@@ -48,6 +48,7 @@ public class Epic extends Task {
     @Override
     public TaskState getState() {
         //по умолчанию статус NEW
+        super.setState(NEW);
         if (subtasks.size() == 0) {
             return NEW;
         }
@@ -74,15 +75,18 @@ public class Epic extends Task {
             }
         }
         // если все подзадачи в статусе NEW, то статус эпика NEW
+        TaskState newState;
         if (!flagInProgress && !flagDone) {
-            return TaskState.NEW;
+            newState = TaskState.NEW;
         } else if (!flagNew && !flagInProgress) {
             // если все подзадачи в статусе DONE, то статус эпика DONE
-            return TaskState.DONE;
+            newState = TaskState.DONE;
         } else {
             // иначе статус эпика IN_PROGRESS
-            return TaskState.IN_PROGRESS;
+            newState = TaskState.IN_PROGRESS;
         }
+        super.setState(newState);
+        return newState;
     }
 
     @Override
@@ -97,12 +101,16 @@ public class Epic extends Task {
 
     @Override
     public LocalDateTime getStartTime() {
-        return (subtasks.size() == 0) ? null : subtasks.first().getStartTime();
+        LocalDateTime time = (subtasks.size() == 0) ? null : subtasks.first().getStartTime();
+        super.setStartTime(time);
+        return time;
     }
 
     @Override
     public int getDuration() {
-        return subtasks.stream().mapToInt(s -> s.getDuration()).sum();
+        int duration = subtasks.stream().mapToInt(s -> s.getDuration()).sum();
+        super.setDuration(duration);
+        return duration;
     }
 
     @Override

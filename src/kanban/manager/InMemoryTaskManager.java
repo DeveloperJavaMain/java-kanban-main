@@ -197,6 +197,10 @@ public class InMemoryTaskManager implements TaskManager {
         //hmEpics.clear();
         for (Epic epic : hmEpics.values()) {
             epic.getSubtasks().clear();
+                // обнавляем поля Task.state, Task.startTime и Task.duration
+                epic.getState();
+                epic.getStartTime();
+                epic.getDuration();
         }
     }
 
@@ -219,6 +223,10 @@ public class InMemoryTaskManager implements TaskManager {
         Epic epic = hmEpics.get(newSubtask.getEpic());
         if (epic != null) {
             epic.getSubtasks().add(newSubtask);
+            // обнавляем поля Task.state, Task.startTime и Task.duration
+            epic.getState();
+            epic.getStartTime();
+            epic.getDuration();
         }
         return id;
     }
@@ -266,6 +274,10 @@ public class InMemoryTaskManager implements TaskManager {
             // если не найден эпик то возвращаем ошибку
             epic.getSubtasks().remove(oldSubtask);
             //checkEpicState(epic.getId()); // обновляем статус старого эпика
+            // обнавляем поля Task.state, Task.startTime и Task.duration
+            epic.getState();
+            epic.getStartTime();
+            epic.getDuration();
             newEpic.getSubtasks().add(subtask);
             epic = newEpic;
         }
@@ -292,6 +304,10 @@ public class InMemoryTaskManager implements TaskManager {
         // если эпик не найден то ошибка
         if (epic != null) {
             epic.getSubtasks().remove(subtask);
+            // обнавляем поля Task.state, Task.startTime и Task.duration
+            epic.getState();
+            epic.getStartTime();
+            epic.getDuration();
         }
         //checkEpicState(epic.getId()); // обновляем статус эпика
 
@@ -323,60 +339,6 @@ public class InMemoryTaskManager implements TaskManager {
         return counter++;
     }
 
-    // рассчет статуса эпика
-/*
-    private void checkEpicState2(long id) {
-        boolean flagNew = false;
-        boolean flagInProgress = false;
-        boolean flagDone = false;
-        Epic epic = hmEpics.get(id);
-        if (epic == null) {
-            return;
-        }
-        //по умолчанию статус NEW
-        if (epic.getSubtasks().size() == 0) {
-            epic.setState(NEW);
-        }
-        // список подзадач
-        List<Subtask> list = epic.getSubtasks().stream().map(_id -> hmSubtasks.get(_id)).collect(Collectors.toList());
-        TreeSet<Subtask> subtasks = new TreeSet<>(list);
-
-        //пересчитываем startTime, duration, endTime
-        epic.setStartTime((subtasks.size() > 0) ? subtasks.first().getStartTime() : null);
-        epic.setDuration(subtasks.stream().mapToInt(Subtask::getDuration).sum());
-        epic.setEndTime(subtasks.last().getEndTime());
-
-        //проверяем статусы подзадачь
-        //for (Long subtaskId : epic.getSubtaskIds()) {
-        //    Subtask subtask = hmSubtasks.get(subtaskId);
-        for (Subtask subtask : subtasks) {
-            if (subtask == null) {
-                continue;
-            }
-            switch (subtask.getState()) {
-                case NEW:
-                    flagNew = true;
-                    break;
-                case IN_PROGRESS:
-                    flagInProgress = true;
-                    break;
-                case DONE:
-                    flagDone = true;
-                    break;
-            }
-        }
-        // если все подзадачи в статусе NEW, то статус эпика NEW
-        if (!flagInProgress && !flagDone) {
-            epic.setState(TaskState.NEW);
-        } else if (!flagNew && !flagInProgress) {
-            // если все подзадачи в статусе DONE, то статус эпика DONE
-            epic.setState(TaskState.DONE);
-        } else {
-            // иначе статус эпика IN_PROGRESS
-            epic.setState(TaskState.IN_PROGRESS);
-        }
-    }
-*/
 
     // get Task by ID
     protected Task getById(long id) {

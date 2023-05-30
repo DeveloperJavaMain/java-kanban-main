@@ -31,7 +31,9 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     // constructor with backed file
     public FileBackedTasksManager(File storeFile) {
         this.storeFile = storeFile;
-        load();
+        if(storeFile!=null) {
+            load();
+        }
     }
 
     // create FileBackedTasksManager
@@ -175,9 +177,23 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         }
     }
 
+
+    protected String storeToString() {
+        StringBuilder sb = new StringBuilder();
+            sb.append("id,type,name,status,description,epic,startTime,duration\n");
+            getAllTasks().forEach(t -> sb.append(toString(t)).append("\n"));
+            getAllEpics().forEach(t -> sb.append(toString(t)).append("\n"));
+            getAllSubtasks().forEach(t -> sb.append(toString(t)).append("\n"));
+            sb.append("\n");
+            sb.append(historyToString(getHistoryManager()));
+            sb.append("\n");
+        return sb.toString();
+    }
     // save data to File
     protected void save() {
         try (FileWriter fw = new FileWriter(storeFile)) {
+            fw.write(storeToString());
+/*
             fw.write("id,type,name,status,description,epic,startTime,duration\n");
             getAllTasks().forEach(t -> writeTask(t, fw));
             getAllEpics().forEach(t -> writeTask(t, fw));
@@ -185,6 +201,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
             fw.write("\n");
             fw.write(historyToString(getHistoryManager()));
             fw.write("\n");
+ */
         } catch (IOException e) {
             throw new ManagerSaveException("Error on save data", e);
         }

@@ -6,13 +6,20 @@ import kanban.model.Epic;
 import kanban.model.Subtask;
 import kanban.model.Task;
 import kanban.model.TaskState;
+import server.KVServer;
 
+import java.io.IOException;
 import java.util.List;
 
 public class Main {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
+        KVServer server = new KVServer();
+        server.start();
+
         testCase3(); // выполняем только новый сценарий тестирования
+
+        server.stop();
     }
 
     // сценарий тестирования по ТЗ-3
